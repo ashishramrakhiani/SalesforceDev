@@ -1,0 +1,31 @@
+//class which implements Database.Batchable interface
+global class LeadProcessor implements Database.Batchable<sObject>{
+    
+    global integer recordsProcessed = 1;
+    global Database.QueryLocator start(Database.BatchableContext bc){
+
+        //retrieving all lead records
+       return Database.getQueryLocator('SELECT ID, LeadSource, Rating from Lead');
+    }
+  
+    global void execute(Database.BatchableContext bc, List<Lead> scope){
+        for(Lead l : scope){
+            //updating leadsource and rating
+            l.LeadSource = 'Dreamforce';
+             l.Rating = 'Hot';
+
+        }
+        update scope;       
+   }
+       
+    global void finish(Database.BatchableContext bc){
+        
+      
+     System.debug(recordsProcessed + ' records processed.');
+     AsyncApexJob job = [SELECT Id, Status, NumberOfErrors,JobItemsProcessed,TotalJobItems, CreatedBy.Email
+            FROM AsyncApexJob
+            WHERE Id = :bc.getJobId()];
+        
+   }    
+
+}
